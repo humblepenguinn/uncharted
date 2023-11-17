@@ -13,17 +13,26 @@ const DEFAULT_RIDDLE_INDEX = 0;
 
 export default function Home() {
   const [riddleIndex, setRiddleIndex] = useState(() => {
-    return Number(localStorage.getItem("riddleIndex")) || DEFAULT_RIDDLE_INDEX;
+    if (typeof window !== "undefined") {
+      const storedRiddleIndex =
+        Number(window.localStorage.getItem("riddleIndex")) ||
+        DEFAULT_RIDDLE_INDEX;
+
+      return storedRiddleIndex;
+    }
+
+    return DEFAULT_RIDDLE_INDEX;
   });
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.localStorage) {
+    if (typeof window !== "undefined") {
       const storedRiddleIndex =
-        Number(localStorage.getItem("riddleIndex")) || DEFAULT_RIDDLE_INDEX;
-      setRiddleIndex(storedRiddleIndex);
+        Number(window.localStorage.getItem("riddleIndex")) ||
+        DEFAULT_RIDDLE_INDEX;
 
+      setRiddleIndex(storedRiddleIndex);
     } else {
-      console.error("localStorage is not supported in this environment.");
+      setRiddleIndex(DEFAULT_RIDDLE_INDEX);
     }
   }, []);
 
@@ -44,11 +53,15 @@ export default function Home() {
   const [isGameOver, setIsGameOver] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("riddleIndex", riddleIndex.toString());
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("riddleIndex", riddleIndex.toString());
+    }
   }, [riddleIndex]);
 
   useEffect(() => {
-    setRiddleIndex(Number(localStorage.getItem("riddleIndex")));
+    if (typeof window !== "undefined") {
+      setRiddleIndex(Number(window.localStorage.getItem("riddleIndex")));
+    }
 
     const isPageRefreshed =
       window.performance && window.performance.navigation.type === 1;
@@ -67,7 +80,7 @@ export default function Home() {
     setIsPopOverOpen(true);
 
     setUserInput("");
-    
+
     if (userInput === codes[riddleIndex]) {
       setIsCorrect(true);
       setUserInput("");
@@ -80,7 +93,9 @@ export default function Home() {
       }
 
       setRiddleIndex(newRiddleIndex);
-      localStorage.setItem("riddleIndex", newRiddleIndex.toString());
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("riddleIndex", newRiddleIndex.toString());
+      }
 
       const object = getRandomRiddle(newRiddleIndex);
 
